@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# анимация
-from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 from functools import partial
+import copy
 
 # Настройки для стрелок
 arrows = { 1:(1,0), 4:(-1,0), 2:(0,1), 8:(0,-1)}
@@ -12,46 +12,67 @@ scale = 0.25
 
 
 # Обновление сетки
-def update(i, grid, N):
-    if i == 0:
-        global gridv
-        gridv = grid
-    gridv = gridv.move()
+def update(i, grid, N, is_anim, first_round):
+    if is_anim and (i >= 1 or not first_round):
+        grid.move()
+    if first_round:
+        first_round = False
 
-    # очищаем график
+    # Очистка графика
     plt.cla()
     plt.axis('off')
     
-    for r, row in enumerate(gridv.get_particles()):
+    for r, row in enumerate(grid.get_particles()):
         for c, cell in enumerate(row):
 
             if cell in arrows:
-                plt.arrow(c+1, N-r-1+1, scale*arrows[cell][0], scale*arrows[cell][1], head_width=0.1)
+                plt.arrow(c+1, N-r-1+1, scale*arrows[cell][0], scale*arrows[cell][1], head_width=0.1, color='w')
             elif cell in arrows_comb:
                 for arrw in arrows_comb[cell]:
-                    plt.arrow(c+1, N-r-1+1, scale*arrows[arrw][0], scale*arrows[arrw][1], head_width=0.1)
+                    plt.arrow(c+1, N-r-1+1, scale*arrows[arrw][0], scale*arrows[arrw][1], head_width=0.1, color='w')
             elif cell in arrows_collision:
-                plt.plot(c+1, N-r-1+1, 'r*')
-            # else:
-            #     # если нет частицы, ставим точку
-            #     plt.plot(c+1, N-r-1+1, 'ro')
+                plt.scatter(c+1, N-r-1+1, s=150, c='r', marker='*')
 
-    # ставим точки по краям, чтобы оси не двигались от стрелок
-    # изменить этот алгоритм, n^2 это плохо
+    # Цифры на осях
     for i in range(N+2):
         for j in range(N+2):
             if i == 0 or j == 0 or i == N+1 or j == N+1:
-                plt.plot(i, N+2-j-1, 'wo')
+                plt.plot(i, N+2-j-1, 'ko')
+            if i == 0 and j != N+1 and j != 0:
+                plt.text(i, N+2-j-1, str(j), color='w')
+            if j == 0 and i != N+1 and i != 0:
+                plt.text(i, N+2-j-1, str(i), color='w')
     
     # Нарисовать сетку
     for y in range(N+1):
-        plt.plot([x+0.5 for x in range(N+1)], [y+0.5 for _ in range(N+1)], color='k')
+        plt.plot([x+0.5 for x in range(N+1)], [y+0.5 for _ in range(N+1)], color='y')
     for x in range(N+1):
-        plt.plot([x+0.5 for _ in range(N+1)], [y+0.5 for y in range(N+1)], color='k')
+        plt.plot([x+0.5 for _ in range(N+1)], [y+0.5 for y in range(N+1)], color='y')
 
 
 # Прорисовка графика
-def draw(grid):
-    fig, ax = plt.subplots()
-    anim = FuncAnimation(fig, partial(update, grid=grid, N=grid.size), frames=20, interval=500)
+def draw(fig, grid, is_anim):
+    plt.ioff() 
+    new_grid = copy.deepcopy(grid) 
+    anim = animation.FuncAnimation(fig, partial(update, grid=new_grid, N=new_grid.size, is_anim=is_anim, first_round=True), frames=30, interval=200)
     plt.show()
+
+
+# Сохранение в гифку
+def save_gif(fig, grid, is_anim):
+    plt.ioff()
+    new_grid = copy.deepcopy(grid)
+    anim2 = animation.FuncAnimation(fig, partial(update, grid=new_grid, N=new_grid.size, is_anim=is_anim, first_round=True), frames=30, interval=200)
+    writer = animation.PillowWriter(fps=2)
+    anim2.save('hpp.gif', writer=writer)
+    plt.cla()
+
+
+# Создание фигуры
+def input_particles():
+    fig, ax = plt.subplots()
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor("black")
+    plt.ion()
+    fig.show()
+    return fig

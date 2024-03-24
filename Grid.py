@@ -8,11 +8,11 @@ class Grid:
         self.size = N
         self.grid = np.zeros((N, N), int)
 
-    # ввести координаты и направление частицы
+    # Ввести координаты и направление частицы
     def set_particles(self, i, j, direction):
-        self.grid[i][j] = direction
+        self.grid[i][j] |= direction
 
-    # вернуть матрицу с координатами и направлениями частиц
+    # Вернуть матрицу с координатами и направлениями частиц
     def get_particles(self):
         return self.grid
 
