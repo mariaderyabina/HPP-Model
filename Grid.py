@@ -3,6 +3,18 @@ import numpy as np
 
 class Grid:
 
+    # Направления скоростей частиц
+    global r_speed
+    global u_speed
+    global l_speed
+    global d_speed
+
+    r_speed = 1
+    u_speed = 2
+    l_speed = 4
+    d_speed = 8    
+
+
     # Создание сетки
     def __init__(self, N):
         self.size = N
@@ -19,79 +31,58 @@ class Grid:
     # Функции для передвижения частиц
     def right(self, i, j, grid):
         if(j==self.size-1):
-            grid[i][0] |= 1
+            grid[i][0] |= r_speed
         else:
-            grid[i][j+1] |= 1
+            grid[i][j+1] |= r_speed
 
     def up(self, i, j, grid):
         if(i==0):
-            grid[self.size-1][j] |= 2
+            grid[self.size-1][j] |= u_speed
         else:
-            grid[i-1][j] |= 2 
+            grid[i-1][j] |= u_speed 
 
     def left(self, i, j, grid):
         if(j==0):
-            grid[i][self.size-1] |= 4
+            grid[i][self.size-1] |= l_speed
         else:
-            grid[i][j-1] |= 4
+            grid[i][j-1] |= l_speed
 
     def down(self, i, j, grid):
         if(i==self.size-1):
-            grid[0][j] |= 8
+            grid[0][j] |= d_speed
         else:
-            grid[i+1][j] |= 8
+            grid[i+1][j] |= d_speed
 
 
     def move(self):
         newgrid = np.zeros((self.size, self.size), int)
         for i, row in enumerate(self.grid):
             for j, val in enumerate(row):
-                if(val==1):
+                # Проверка наличия частиц в ячейке
+                r = val & r_speed
+                u = val & u_speed
+                l = val & l_speed
+                d = val & d_speed
+
+                # 1 этап - обработка коллизий - обрабатываются случаи, когда в ячейке 2 частицы с противоположными скоростями
+                # у таких частиц направления скоростей меняются на 90 градусов
+                if r and l and not(u or d):
+                    r, l = 0, 0
+                    u, d = u_speed, d_speed
+                elif u and d and not(r or l):
+                    u, d = 0, 0
+                    r, l = r_speed, l_speed
+
+                # 2 этап - распространение
+                # двигаем частицы
+                if r:
                     self.right(i, j, newgrid)
-                elif(val==2):
+                if u:
                     self.up(i, j, newgrid)
-                elif(val==4):
+                if l:
                     self.left(i, j, newgrid)
-                elif(val==8):
+                if d:
                     self.down(i, j, newgrid)
-                elif(val==3):
-                    self.up(i, j, newgrid)
-                    self.right(i, j, newgrid)
-                elif(val==9):
-                    self.right(i, j, newgrid)
-                    self.down(i, j, newgrid)
-                elif(val==6):
-                    self.left(i, j, newgrid)
-                    self.up(i, j, newgrid)
-                elif(val==12):
-                    self.left(i, j, newgrid)
-                    self.down(i, j, newgrid)
-                elif(val==5):
-                    self.up(i, j, newgrid)
-                    self.down(i, j, newgrid)
-                elif(val==10):
-                    self.left(i, j, newgrid)
-                    self.right(i, j, newgrid)
-                elif(val==7):
-                    self.left(i, j, newgrid)
-                    self.up(i, j, newgrid)
-                    self.right(i, j, newgrid)
-                elif(val==11):
-                    self.up(i, j, newgrid)
-                    self.down(i, j, newgrid)
-                    self.right(i, j, newgrid)
-                elif(val==13):
-                    self.down(i, j, newgrid)
-                    self.left(i, j, newgrid)
-                    self.right(i, j, newgrid)
-                elif(val==14):
-                    self.left(i, j, newgrid)
-                    self.up(i, j, newgrid)
-                    self.down(i, j, newgrid)
-                elif(val==15):
-                    self.right(i, j, newgrid)
-                    self.up(i, j, newgrid)
-                    self.left(i, j, newgrid)
-                    self.down(i, j, newgrid)
+
         self.grid = newgrid
         return self             
