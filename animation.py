@@ -54,7 +54,7 @@ def update(i, grid, N, is_anim, first_round):
 def draw(fig, grid, is_anim):
     plt.ioff() 
     new_grid = copy.deepcopy(grid) 
-    anim = animation.FuncAnimation(fig, partial(update, grid=new_grid, N=new_grid.size, is_anim=is_anim, first_round=True), frames=30, interval=200)
+    anim = animation.FuncAnimation(fig, partial(update, grid=new_grid, N=new_grid.size, is_anim=is_anim, first_round=True), frames=100, interval=170)
     plt.show()
 
 
@@ -62,7 +62,7 @@ def draw(fig, grid, is_anim):
 def save_gif(fig, grid, is_anim):
     plt.ioff()
     new_grid = copy.deepcopy(grid)
-    anim2 = animation.FuncAnimation(fig, partial(update, grid=new_grid, N=new_grid.size, is_anim=is_anim, first_round=True), frames=30, interval=200)
+    anim2 = animation.FuncAnimation(fig, partial(update, grid=new_grid, N=new_grid.size, is_anim=is_anim, first_round=True), frames=100, interval=170)
     writer = animation.PillowWriter(fps=2)
     anim2.save('hpp.gif', writer=writer)
     plt.cla()
